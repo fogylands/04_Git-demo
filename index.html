@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>loadimage_v2_001</title>
+	<title>exp_pixel-move-dir_001</title>
 	<meta charset="utf-8">
 	<!-- Compiled w/ P5LIVE, http://github.com/ffd8/p5live -->
 	<style type="text/css">
@@ -30,10 +30,10 @@
 	</script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/p5@2/lib/p5.min.js"></script>
 </head>
-<body style="background: rgb(0, 0, 0);">
+<body style="background: rgb(255, 255, 255);">
 
 <script type="text/javascript">
-//loadimage_v2_001
+//exp_pixel-move-dir_001
 
 /* CUSTOM FUNCTIONS FOR P5LIVE */
 // keep fullscreen if window resized
@@ -52,26 +52,237 @@ function println(msg){
 }
 
 
-// p5 = '2' // set version of p5.js
-
+let grid = [];
+let size = 20;
 let img;
-let grid=[];
+
+let pillow=10;
+
+//slider Shape
+let sliderX=200;
+let sliderY=200
+let sliderSize=20;
+let sliderPos=200;
+let dragging=false;
+
+//reset Button
+let resetX=250;
+let resetY=200;
+let resetW=100;
+let resetH=30;
+
+//slider Color
+let sliderColorX=400;
+let sliderColorY=200
+let sliderColorSize=20;
+let sliderColorPos=200;
+let draggingColor=false;
+
+let baseSpeed=5;
 
 
-async function setup() {
-	createCanvas(windowWidth, windowHeight)
-	img = await loadImage('/data/01_imgs/Grube-Siselen.png')
-	
+function preload(){
+	//img = loadImage('https://cdn.theatlantic.com/thumbor/zglIFllAe-MZFcM__O5G5WujJyw=/1500x1000/media/img/photo/2023/11/winners-2023-natural-landscape-phot/a01_GS_02_Lequarre/original.jpg');
 }
+
+
+function setup() {
+	createCanvas(windowWidth, windowHeight);
+	buildGrid();
+	noCursor();
+
+}
+
+
 
 function draw() {
-	imageMode(CENTER)
-	image(img, windowWidth/2, windowHeight/2);
+	background(255);
+	let colorIntens = sliderColor();
+	
+	updateGrid(colorIntens,sliderPos);
+	renderGrid(colorIntens);
+	slider();
+	sliderColor();
+	drawButton();
 	
 }
 
-function dgrid(){
+
+function buildGrid() {
+	grid = [];
 	
+	let cols= floor(width/size);
+	let rows= floor(height/size);
+	
+	let xStep=width/cols;
+	let yStep= height/rows;
+
+	for (let i = 0; i < cols; i++) {
+		for (let j = 0; j <rows; j++) {
+
+			let x= i*xStep;
+			let y= j*yStep;
+
+			grid.push({
+				x: x,
+				y: y,
+				ox:x,
+				oy:y,
+				w:xStep,
+				h:yStep,
+			});
+		}
+	}
+}
+
+function updateGrid(colorIntens,sliderPos){
+	keyboard(colorIntens, sliderPos);
+}
+
+function keyboard(colorIntens, sliderPos){
+		
+		if(keyCode==32) return;
+		
+		for (let i = 0; i < grid.length; i++) {
+			
+			let cell= grid[i];
+			
+			let d= floor(dist(mouseX, mouseY, cell.x,cell.y))
+		
+			let radius= map(colorIntens, 0,5,20,200)
+			
+			let influence=constrain(radius/d,0,10);
+			influence=influence*influence;
+			
+			let dir=map(sliderPos,sliderY,sliderY+500,-1,1)
+			let speed=baseSpeed*influence*dir;
+			
+			cell.x += speed
+			
+		}
+}
+
+
+function mouseInfluence(cell, colorIntens){
+	let radius= map(colorIntens, 0,5,20,200)
+	let d= dist(mouseX, mouseY, cell.x,cell.y)
+	return map(d, 0, radius, 0, 255);
+}
+
+
+function renderGrid(colorIntens){
+
+	for (let i = 0; i < grid.length; i++) {
+	
+		let cell= grid[i];
+		
+		let c = mouseInfluence(cell, colorIntens);
+		
+		
+		fill(c,0,0);
+		noStroke();
+		rect(cell.x, cell.y, cell.w, cell.h);
+	}	
+}
+	
+function mousePressed(){
+	//color slider 
+	if(
+		mouseX>sliderColorX-pillow &&
+		mouseX<sliderColorX+sliderSize+pillow &&
+		mouseY>sliderColorY-pillow &&
+		mouseY<sliderColorY+pillow+500
+	){
+		draggingColor = true;
+	}
+	
+	// shape slider
+		if(
+		mouseX>sliderX-pillow &&
+		mouseX<sliderX+sliderSize+pillow &&
+		mouseY>sliderY-pillow &&
+		mouseY<sliderY+pillow+500
+	){
+		dragging =true;
+	}
+	
+	//reset button
+	if(
+		mouseX>resetX-pillow &&
+		mouseX<resetX+resetW+pillow&&
+		mouseY>resetY-pillow&&
+		mouseY<resetY+resetH+pillow
+		
+		){
+			resetGrid();
+		}
+}
+
+function mouseReleased(){
+	dragging=false;
+	draggingColor=false;
+}
+
+// shape slider
+function slider(){
+	fill(0);
+	
+	if(dragging){
+		sliderPos=mouseY;
+		sliderPos=constrain(sliderPos,sliderY,sliderY+500)
+	}
+
+	rect(sliderX,sliderPos,sliderSize,sliderSize);
+	
+	stroke(0)
+	line(sliderX+(sliderSize/2),sliderY,sliderX+(sliderSize/2),sliderY+500)
+	
+	return sliderPos
+}
+
+
+// color slider
+function sliderColor(){
+	fill(0);
+
+	
+	
+	if(draggingColor){
+		sliderColorPos=mouseY;
+		sliderColorPos=constrain(sliderColorPos,sliderColorY,sliderColorY+500)
+	}
+	
+	rect(sliderColorX,sliderColorPos,sliderColorSize,sliderColorSize);
+	
+	stroke(0)
+	line(sliderColorX+(sliderColorSize/2),sliderColorY,sliderColorX+(sliderColorSize/2),sliderColorY+500)
+	
+	let colorIntens=map(sliderColorPos, sliderColorY, sliderColorY+500, 0,5)
+	return colorIntens
+}
+
+
+
+
+//reset button
+function drawButton(){
+	fill(255)
+	rect(resetX,resetY, resetW, resetH)
+	
+	fill(0)
+	textSize(20);
+	textAlign(CENTER,CENTER)
+	text("reset",resetX+resetW/2,resetY+resetH/2);
+}
+
+function resetGrid(){
+		
+
+	for (let i = 0; i < grid.length; i++) {
+		let cell= grid[i];
+		cell.x=cell.ox;
+		cell.y=cell.oy;
+	}
 }
 </script>
 
