@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>11_gtm_</title>
+	<title>exp_pixel-move-dir_001</title>
 	<meta charset="utf-8">
 	<!-- Compiled w/ P5LIVE, http://github.com/ffd8/p5live -->
 	<style type="text/css">
@@ -28,12 +28,12 @@
 			loop();
 		};
 	</script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/p5@2/lib/p5.min.js"></script>
+<script type="text/javascript" src="js/p5.min.js"></script>
 </head>
-<body style="background: rgb(0, 0, 0);">
+<body style="background: rgb(255, 255, 255);">
 
 <script type="text/javascript">
-//11_gtm_
+//exp_pixel-move-dir_001
 
 /* CUSTOM FUNCTIONS FOR P5LIVE */
 // keep fullscreen if window resized
@@ -52,323 +52,237 @@ function println(msg){
 }
 
 
-//p5='2'
-let direction;
-let strength;
-
-//img upload variables
-let img;
-let input;
-
-let layers=[]
-
-//grid variables
 let grid = [];
 let size = 20;
-let cols, rows;
+let img;
 
-let baseSpeed=0.5;
-let sliderSpeed=0;
-let colorPicker
+let pillow=10;
 
-let video;
-let isVideo = false;
+//slider Shape
+let sliderX=200;
+let sliderY=200
+let sliderSize=20;
+let sliderPos=200;
+let dragging=false;
+
+//reset Button
+let resetX=250;
+let resetY=200;
+let resetW=100;
+let resetH=30;
+
+//slider Color
+let sliderColorX=400;
+let sliderColorY=200
+let sliderColorSize=20;
+let sliderColorPos=200;
+let draggingColor=false;
+
+let baseSpeed=5;
 
 
-async function setup() {
-	createCanvas(windowWidth, windowHeight);
-	tempLayer = createGraphics(width, height)
-	noCursor();
-	
-	initGUI() // see function below 
+function preload(){
+	//img = loadImage('https://cdn.theatlantic.com/thumbor/zglIFllAe-MZFcM__O5G5WujJyw=/1500x1000/media/img/photo/2023/11/winners-2023-natural-landscape-phot/a01_GS_02_Lequarre/original.jpg');
 }
+
+
+function setup() {
+	createCanvas(windowWidth, windowHeight);
+	buildGrid();
+	noCursor();
+
+}
+
+
 
 function draw() {
-	background(colorPicker.color());
-
-	for(let l of layers){
-		image(l,0,0)
-	}
+	background(255);
+	let colorIntens = sliderColor();
 	
-	drawboard()
-	image(tempLayer,0,0)
-
-}
-
-function drawboard(){
-	if (!img) {return;}
-		
-	tempLayer.clear()
+	updateGrid(colorIntens,sliderPos);
+	renderGrid(colorIntens);
+	slider();
+	sliderColor();
+	drawButton();
 	
-	let rad=radius.value();
-	let speedS=speedSlider.value();
-	updateGrid(rad, speedS);
-	renderGrid();
 }
 
-
-// process selected file 
-function fileHandle(file) {
-	if (file.type === 'image') {
-		loadImage(file.data, loaded => {
-			img = loaded;
-			img.loadPixels();
-			resGrid()
-			buildGrid();
-			console.log("image loaded", img);
-		});
-	} else {
-		img = null;
-	}
-}
 
 function buildGrid() {
-	size=sizeSlider.value()
 	grid = [];
-	cols= floor(width/size);								//columns of grid
-	rows= floor(height/size);								//rows of grid
-	//print(cols*rows)			//
 	
-	let xStep=width/cols;									//width between columns
-	let yStep= height/rows; 								//height between rows
+	let cols= floor(width/size);
+	let rows= floor(height/size);
+	
+	let xStep=width/cols;
+	let yStep= height/rows;
 
 	for (let i = 0; i < cols; i++) {
 		for (let j = 0; j <rows; j++) {
 
 			let x= i*xStep;
 			let y= j*yStep;
-			
-			let imgX=floor(map(x,0,width,0,img.width));
-			let imgY=floor(map(y,0,height,0,img.height));
-			
-			let pixelIndex = (imgX + imgY * img.width) * 4;		//counts through pixels of img
-		
-			grid.push({ 									//saves pixel data in array
-				x: x,										//original x location of pixel
-				y: y,										//original y location of pixel
-				ox:x,										//offset x location of pixel
-				oy:y,										//offset y location of pixel
-				w:xStep,									//width of pixel
-				h:yStep,									//height of pixel
-				r : img.pixels[pixelIndex],
-				g : img.pixels[pixelIndex + 1],
-				b : img.pixels[pixelIndex + 2],
+
+			grid.push({
+				x: x,
+				y: y,
+				ox:x,
+				oy:y,
+				w:xStep,
+				h:yStep,
 			});
 		}
 	}
 }
 
-
-function resGrid(){
-	size=sizeSlider.value()
-	resolution=floor(width/size)*floor(height/size);
-	labelSize.html(`${resolution} pixels`)
+function updateGrid(colorIntens,sliderPos){
+	keyboard(colorIntens, sliderPos);
 }
 
-
-function renderGrid(){
-	img.loadPixels();
-	for (let i = 0; i < cols; i++) {
-		for (let j = 0; j < rows; j++) {
-		let gridIndex = i + j * cols; 						//counts through cells
-		let cell = grid[gridIndex]; 						//all cells
+function keyboard(colorIntens, sliderPos){
 		
-	
-		tempLayer.fill(cell.r,cell.g,cell.b);
-		tempLayer.noStroke();
-		tempLayer.rect(cell.x, cell.y, cell.w, cell.h);				//draw the cells with color from img
+		if(keyCode==32) return;
+		
+		for (let i = 0; i < grid.length; i++) {
+			
+			let cell= grid[i];
+			
+			let d= floor(dist(mouseX, mouseY, cell.x,cell.y))
+		
+			let radius= map(colorIntens, 0,5,20,200)
+			
+			let influence=constrain(radius/d,0,10);
+			influence=influence*influence;
+			
+			let dir=map(sliderPos,sliderY,sliderY+500,-1,1)
+			let speed=baseSpeed*influence*dir;
+			
+			cell.x += speed
+			
 		}
-	}	
 }
 
 
-function updateGrid(rad,speedS){
-	for (let i = 0; i < grid.length; i++) {
-			
-		let cell= grid[i];  								//creates cell from each pixel
-			
-		let d= floor(dist(mouseX, mouseY, cell.x,cell.y))	//gets distance from mouse to each cell
-		
-		let radius=10*rad;									//RADIUS
-		let speedRadius= dist(mouseX,mouseY, cell.x,cell.y);//mapping speed difference over distance
-		let influence=constrain(radius/max(d,1),0,10);		
-		influence=influence*influence;						//makes the speedfalloff more organic?
-	
-			
-		let dirX=map(speedS,0,255,-1,1)						//make it value from -1 to 1
-		
-		
-		
-		let speed=baseSpeed*influence*dirX;	//SPEED
-		
-		if (mouseIsPressed && !mouseIsPanel()){
-			cell.x = cell.x + speed;
-		}
-	}
-}
-
-
-
-function mouseInfluence(cell,speedS){
-	let radius= map(speedS, 0,5,20,200)
+function mouseInfluence(cell, colorIntens){
+	let radius= map(colorIntens, 0,5,20,200)
 	let d= dist(mouseX, mouseY, cell.x,cell.y)
 	return map(d, 0, radius, 0, 255);
 }
 
+
+function renderGrid(colorIntens){
+
+	for (let i = 0; i < grid.length; i++) {
+	
+		let cell= grid[i];
+		
+		let c = mouseInfluence(cell, colorIntens);
+		
+		
+		fill(c,0,0);
+		noStroke();
+		rect(cell.x, cell.y, cell.w, cell.h);
+	}	
+}
+	
+function mousePressed(){
+	//color slider 
+	if(
+		mouseX>sliderColorX-pillow &&
+		mouseX<sliderColorX+sliderSize+pillow &&
+		mouseY>sliderColorY-pillow &&
+		mouseY<sliderColorY+pillow+500
+	){
+		draggingColor = true;
+	}
+	
+	// shape slider
+		if(
+		mouseX>sliderX-pillow &&
+		mouseX<sliderX+sliderSize+pillow &&
+		mouseY>sliderY-pillow &&
+		mouseY<sliderY+pillow+500
+	){
+		dragging =true;
+	}
+	
+	//reset button
+	if(
+		mouseX>resetX-pillow &&
+		mouseX<resetX+resetW+pillow&&
+		mouseY>resetY-pillow&&
+		mouseY<resetY+resetH+pillow
+		
+		){
+			resetGrid();
+		}
+}
+
+function mouseReleased(){
+	dragging=false;
+	draggingColor=false;
+}
+
+// shape slider
+function slider(){
+	fill(0);
+	
+	if(dragging){
+		sliderPos=mouseY;
+		sliderPos=constrain(sliderPos,sliderY,sliderY+500)
+	}
+
+	rect(sliderX,sliderPos,sliderSize,sliderSize);
+	
+	stroke(0)
+	line(sliderX+(sliderSize/2),sliderY,sliderX+(sliderSize/2),sliderY+500)
+	
+	return sliderPos
+}
+
+
+// color slider
+function sliderColor(){
+	fill(0);
+
+	
+	
+	if(draggingColor){
+		sliderColorPos=mouseY;
+		sliderColorPos=constrain(sliderColorPos,sliderColorY,sliderColorY+500)
+	}
+	
+	rect(sliderColorX,sliderColorPos,sliderColorSize,sliderColorSize);
+	
+	stroke(0)
+	line(sliderColorX+(sliderColorSize/2),sliderColorY,sliderColorX+(sliderColorSize/2),sliderColorY+500)
+	
+	let colorIntens=map(sliderColorPos, sliderColorY, sliderColorY+500, 0,5)
+	return colorIntens
+}
+
+
+
+
+//reset button
+function drawButton(){
+	fill(255)
+	rect(resetX,resetY, resetW, resetH)
+	
+	fill(0)
+	textSize(20);
+	textAlign(CENTER,CENTER)
+	text("reset",resetX+resetW/2,resetY+resetH/2);
+}
+
 function resetGrid(){
+		
+
 	for (let i = 0; i < grid.length; i++) {
 		let cell= grid[i];
 		cell.x=cell.ox;
 		cell.y=cell.oy;
 	}
-}
-
-function newComposition(){
-	resetGrid();
-	layers=[];
-	tempLayer.clear();
-	clear();
-}
-
-function initGUI() { 
-  // by never declaring vars above, they become global.. js hack! 
-  // create generic div (html container)  
-  guiHolder = createDiv()
- 
-    .class('guiHolder') // add class for styling via CSS  
- 
-	// TITLE dragable
-	titleBar = createDiv('Forcefield') 
-    .parent(guiHolder) 
-    .class('titlebar') 
-    .draggable(guiHolder) // can drag the parent div 
-    
-    
-    //COLORPICKER
-	labelSize = createDiv('background color') 
-    .parent(guiHolder)
-    .class('label')
- 	colorPicker = createColorPicker('#ed225d')
-    .parent(guiHolder) 
-    
- 
- 
-	//SIZE
-	labelSize = createDiv('size') 
-    .parent(guiHolder)
-    .class('label')
- 
-	sizeSlider = createSlider(10, 50, size, 1)
-    .parent(guiHolder) 
-    .class('slider')
-    .input(resGrid)
-    
-    
-    
-	//SPEED - DIRECTION
-	createDiv('direction') 
-    .parent(guiHolder) // place inside gui div  
-    .class('label') // class for CSS  
- 
-	speedSlider = createSlider(0, 255, 150, 1)
-    .parent(guiHolder) //  place inside gui div  
-    .class('slider') // class for CSS  
-    
-    
-	//RADIUS
-	createDiv('radius') 
-    .parent(guiHolder) // place inside gui div  
-    .class('label') // class for CSS  
-    
-	 radius = createSlider(0, 255, 150, 1) // use mySlider.value() * _maxVal_ 
-    .parent(guiHolder) //  place inside gui div  
-    .class('slider') // class for CSS  
-    
-    
-    //IMAGE
-   	createDiv() 
-    .parent(guiHolder) // place inside gui div  
-    .class('label') // class for CSS  
-    
-	input = createFileInput(fileHandle)
-    .parent(guiHolder) //  place inside gui div  
-    .class('button') // class for CSS  
-    
-    //ADD LAYER
-    createDiv() 
-    .parent(guiHolder)
-    .class('label')
-    
-	 addBtn=createButton('add Layer')
-	 
-    .parent(guiHolder)
-    .class('button');
-    addBtn.mousePressed(addLayer)
-    
-    
-    
-    //SAVE
-    createDiv() 
-    .parent(guiHolder) // place inside gui div  
-    .class('label')
-    
-	 saveBtn=createButton('save as png')
-	 
-    .parent(guiHolder)
-    .class('button');
-    saveBtn.mousePressed(savePNG)
-    
-    // RESET
-     createDiv() 
-    .parent(guiHolder) // place inside gui div  
- 
-    
-	 reset=createButton('reset')
-	 reset.mousePressed(buildGrid)
-    .parent(guiHolder)
-    .class('button')
-    
-
-   // NEW COMPOSITION
-     createDiv() 
-    .parent(guiHolder) // place inside gui div  
- 
-    
-	 newComp=createButton('newComposition')
-	 newComp.mousePressed(buildGrid)
-    .parent(guiHolder)
-    .class('button')
-    
-    
- 
- guiHolder.position(200, 200);
-
-guiHolder.style('background', '#ffffff');
-guiHolder.style('padding', '10px');
-guiHolder.style('border', '1px solid black');
-
-}
- 
-// avoid drawing while using panel 
-function mouseIsPanel() {  
-  let overPanel = true 
-  let ghpos = guiHolder.position() 
-  let ghsize = guiHolder.size() 
-  if((mouseX <= ghpos.x || mouseX >= ghpos.x + ghsize.width) || (mouseY <= ghpos.y || mouseY >= ghpos.y + ghsize.height)) { 
-    overPanel = false 
-  } 
- 
-  return overPanel 
-} 
-
-function addLayer(){
-	 let getLayer = tempLayer.get() // clone layer
-        layers.push(getLayer) // add to collection of layers
-        tempLayer.clear()
-}
-        
-function savePNG(){
-    	saveCanvas('myCanvas', 'png');
 }
 </script>
 
