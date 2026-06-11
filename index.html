@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Fragment-Morpher</title>
+	<title>11_gtm_new Composition</title>
 	<meta charset="utf-8">
 	<!-- Compiled w/ P5LIVE, http://github.com/ffd8/p5live -->
 	<style type="text/css">
@@ -33,7 +33,7 @@
 <body style="background: rgb(0, 0, 0);">
 
 <script type="text/javascript">
-//11_gtm_
+//11_gtm_new Composition
 
 /* CUSTOM FUNCTIONS FOR P5LIVE */
 // keep fullscreen if window resized
@@ -247,7 +247,7 @@ function initGUI() {
     
     
     //COLORPICKER
-	labelSize = createDiv('background color') 
+	labelSize = createDiv('Background Color') 
     .parent(guiHolder)
     .class('label')
  	colorPicker = createColorPicker('#ed225d')
@@ -256,7 +256,7 @@ function initGUI() {
  
  
 	//SIZE
-	labelSize = createDiv('size') 
+	labelSize = createDiv('Size') 
     .parent(guiHolder)
     .class('label')
  
@@ -268,7 +268,7 @@ function initGUI() {
     
     
 	//SPEED - DIRECTION
-	createDiv('direction') 
+	createDiv('Direction') 
     .parent(guiHolder) // place inside gui div  
     .class('label') // class for CSS  
  
@@ -278,7 +278,7 @@ function initGUI() {
     
     
 	//RADIUS
-	createDiv('radius') 
+	createDiv('Radius') 
     .parent(guiHolder) // place inside gui div  
     .class('label') // class for CSS  
     
@@ -301,7 +301,7 @@ function initGUI() {
     .parent(guiHolder)
     .class('label')
     
-	 addBtn=createButton('add Layer')
+	 addBtn=createButton('Add Layer')
 	 
     .parent(guiHolder)
     .class('button');
@@ -314,7 +314,7 @@ function initGUI() {
     .parent(guiHolder) // place inside gui div  
     .class('label')
     
-	 saveBtn=createButton('save as png')
+	 saveBtn=createButton('Save as PNG')
 	 
     .parent(guiHolder)
     .class('button');
@@ -325,7 +325,7 @@ function initGUI() {
     .parent(guiHolder) // place inside gui div  
  
     
-	 reset=createButton('reset')
+	 reset=createButton('Reset Position')
 	 reset.mousePressed(buildGrid)
     .parent(guiHolder)
     .class('button')
@@ -336,7 +336,7 @@ function initGUI() {
     .parent(guiHolder) // place inside gui div  
  
     
-	 newComp=createButton('newComposition')
+	 newComp=createButton('New Composition')
 	 newComp.mousePressed(newComposition)
     .parent(guiHolder)
     .class('button')
