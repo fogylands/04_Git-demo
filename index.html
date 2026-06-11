@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>11_gtm_new Composition</title>
+	<title>12_gtm_gui</title>
 	<meta charset="utf-8">
 	<!-- Compiled w/ P5LIVE, http://github.com/ffd8/p5live -->
 	<style type="text/css">
@@ -33,7 +33,7 @@
 <body style="background: rgb(0, 0, 0);">
 
 <script type="text/javascript">
-//11_gtm_new Composition
+//12_gtm_gui
 
 /* CUSTOM FUNCTIONS FOR P5LIVE */
 // keep fullscreen if window resized
@@ -81,6 +81,7 @@ async function setup() {
 	noCursor();
 	
 	initGUI() // see function below 
+	initStyles()
 }
 
 function draw() {
@@ -250,7 +251,7 @@ function initGUI() {
 	labelSize = createDiv('Background Color') 
     .parent(guiHolder)
     .class('label')
- 	colorPicker = createColorPicker('#ed225d')
+ 	colorPicker = createColorPicker('#ffffff')
     .parent(guiHolder) 
     
  
@@ -289,12 +290,17 @@ function initGUI() {
     
     //IMAGE
    	createDiv() 
-    .parent(guiHolder) // place inside gui div  
-    .class('label') // class for CSS  
-    
 	input = createFileInput(fileHandle)
     .parent(guiHolder) //  place inside gui div  
-    .class('button') // class for CSS  
+    .class('hiddenFile') // class for CSS  
+    
+    fileBtn = createButton('Choose Image');
+    fileBtn
+    .parent(guiHolder)
+    .class('button');
+    fileBtn.mousePressed(() => {
+    	input.elt.click(); // opens file picker
+    	});
     
     //ADD LAYER
     createDiv() 
@@ -351,7 +357,47 @@ guiHolder.style('border', '1px solid black');
 
 
 
+}
 
+
+function initStyles(){
+  createElement('style', `
+
+	.titlebar{
+		font-family: Helvetica, Arial, sans-serif;
+		font-size:20px;
+	}
+
+    .button {
+      background: #eeeeee;
+      border: 1px solid black;
+      padding: 5px 10px;
+      margin-top: 6px;
+      width: 100%;
+      cursor: pointer;
+    }
+    
+    .button:hover {
+      background: #dddddd;
+    }
+
+    .label {
+    	font-family: Helvetica, Arial, sans-serif;
+    	margin-top: 8px;
+    	font-size: 14px;
+    }
+    
+    .slider {
+      width: 100%;
+      margin-top: 4px;
+    }
+    
+    .hiddenFile {
+    display: none;
+    }
+
+
+  `);
 }
  
 // avoid drawing while using panel 
