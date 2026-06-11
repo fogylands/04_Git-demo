@@ -78,7 +78,7 @@ let isVideo = false;
 async function setup() {
 	createCanvas(windowWidth, windowHeight);
 	tempLayer = createGraphics(width, height)
-	noCursor();
+	cursor('crosshair');
 	
 	initGUI() // see function below 
 	initStyles()
